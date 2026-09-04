@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getTheme } from "@/lib/themes";
+import { formatPostDate } from "@/lib/posts";
 
 interface Props {
   params: { username: string };
@@ -42,6 +43,22 @@ export default async function ProfilePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
   const isOwner = user?.id === profile.id;
+
+  const { data: published } = await supabase
+    .from("posts")
+    .select("id, title, slug, excerpt, mood, published_at")
+    .eq("author_id", profile.id)
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
+  const { data: drafts } = isOwner
+    ? await supabase
+        .from("posts")
+        .select("id, title, slug, updated_at")
+        .eq("author_id", profile.id)
+        .eq("status", "draft")
+        .order("updated_at", { ascending: false })
+    : { data: null };
 
   const theme = getTheme(profile.profile_theme?.name);
   const displayName = profile.display_name || profile.username;
@@ -108,17 +125,86 @@ export default async function ProfilePage({ params }: Props) {
           )}
         </section>
 
-        {/* Placeholder for the block grid — arrives in Sprint 3. */}
+        {/* Blog feed */}
         <section
-          className="mt-6 rounded-2xl border border-dashed p-10 text-center"
-          style={{ borderColor: theme.cardBorder }}
+          className="mt-6 rounded-2xl border p-6 backdrop-blur"
+          style={{ background: theme.card, borderColor: theme.cardBorder }}
         >
-          <p className="text-sm opacity-60">
-            {isOwner
-              ? "Your page is looking a little empty. The drag-and-drop block builder lands in Sprint 3 — for now, make it yours from the editor."
-              : `${displayName} hasn't added any blocks yet.`}
-          </p>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold">Posts</h2>
+            {isOwner && (
+              <Link
+                href="/write"
+                className="rounded-lg px-3 py-1.5 text-sm font-semibold text-white"
+                style={{ background: theme.accent }}
+              >
+                ✍️ Write a post
+              </Link>
+            )}
+          </div>
+
+          {published && published.length > 0 ? (
+            <ul>
+              {published.map((p, i) => (
+                <li
+                  key={p.id}
+                  className="border-b py-3 last:border-b-0"
+                  style={{
+                    borderColor: i < published.length - 1 ? theme.cardBorder : "transparent",
+                  }}
+                >
+                  <Link href={`/${profile.username}/${p.slug}`} className="block group">
+                    <div className="font-semibold group-hover:underline">{p.title}</div>
+                    <div className="mt-0.5 text-xs opacity-50">
+                      {formatPostDate(p.published_at)}
+                      {p.mood ? ` · ${p.mood}` : ""}
+                    </div>
+                    {p.excerpt && (
+                      <p className="mt-1 text-sm opacity-80">{p.excerpt}</p>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-4 text-sm opacity-60">
+              {isOwner
+                ? "No posts yet. Write your first one!"
+                : `${displayName} hasn't published any posts yet.`}
+            </p>
+          )}
+
+          {isOwner && drafts && drafts.length > 0 && (
+            <div className="mt-6">
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide opacity-50">
+                Drafts
+              </h3>
+              <ul>
+                {drafts.map((d) => (
+                  <li key={d.id} className="py-2">
+                    <Link
+                      href={`/write/${d.id}`}
+                      className="flex items-center gap-2 text-sm hover:underline"
+                    >
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                        style={{ background: `${theme.accent}22` }}
+                      >
+                        Draft
+                      </span>
+                      {d.title || "Untitled"}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
+
+        {/* The drag-and-drop block builder arrives in Sprint 3. */}
+        <p className="mt-4 text-center text-xs opacity-40">
+          Customizable profile blocks are coming in a future update.
+        </p>
       </div>
     </main>
   );

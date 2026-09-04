@@ -5,16 +5,25 @@ A community blogging platform inspired by Yahoo! 360° (2005–2009). See
 [`yahoo360-profile-builder.jsx`](./yahoo360-profile-builder.jsx) for the visual
 prototype.
 
-## Status — Sprint 1 (Foundation) ✅
+## Status
 
+**Sprint 1 — Foundation ✅**
 - Next.js 14 (App Router) + TypeScript + Tailwind CSS
 - Supabase Postgres schema + Row Level Security + auto profile-creation trigger
 - Auth: email/password **and** Google OAuth
 - Profile creation on signup + onboarding for OAuth users
 - Static, themed profile page at `/{username}` + a basic profile editor
 
-The drag-and-drop block builder, blog editor, and social features come in later
-sprints (see the spec).
+**Sprint 2 — Blog Engine ✅**
+- Tiptap rich-text editor with formatting toolbar (headings, lists, quote,
+  code, links) and image upload to Supabase Storage
+- Post CRUD with draft / published states and per-post visibility
+- SEO-friendly post pages at `/{username}/{slug}` (server-rendered from
+  Tiptap JSON, with OpenGraph metadata)
+- Post + draft listing on the profile page
+
+The drag-and-drop block builder and social features come in later sprints
+(see the spec).
 
 ## Getting started
 
@@ -27,8 +36,13 @@ npm install
 ### 2. Create a Supabase project & run the migration
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** and run the contents of
-   [`supabase/migrations/0001_init.sql`](./supabase/migrations/0001_init.sql).
+2. Open **SQL Editor** and run each migration in order:
+   - [`supabase/migrations/0001_init.sql`](./supabase/migrations/0001_init.sql)
+     — schema, RLS, triggers.
+   - [`supabase/migrations/0002_post_images_storage.sql`](./supabase/migrations/0002_post_images_storage.sql)
+     — the `post-images` Storage bucket + policies (needed for image uploads in
+     the blog editor).
+
    (Or, with the Supabase CLI linked to your project: `supabase db push`.)
 
 ### 3. Configure environment variables
