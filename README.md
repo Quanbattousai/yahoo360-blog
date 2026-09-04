@@ -20,9 +20,17 @@ prototype.
 - Post CRUD with draft / published states and per-post visibility
 - SEO-friendly post pages at `/{username}/{slug}` (server-rendered from
   Tiptap JSON, with OpenGraph metadata)
-- Post + draft listing on the profile page
 
-The drag-and-drop block builder and social features come in later sprints
+**Sprint 3 — Block Builder ✅**
+- Drag-and-drop, resizable profile grid with `react-grid-layout`
+- 10 block types (avatar/bio, blog feed, text, links, image gallery, music,
+  video, friends, guestbook, clock) via a block-component registry
+- Block picker modal, per-block settings, 2/3/4-column toggle,
+  edit vs. preview mode
+- Layout saved to `profiles.profile_layout` (JSON); `/{username}` renders it,
+  `/{username}/edit` is the builder, `/{username}/settings` edits profile fields
+
+The theming/wallpaper system and social features come in later sprints
 (see the spec).
 
 ## Getting started
