@@ -1,5 +1,6 @@
 // Preset gradient themes (from the prototype). Used to style profile pages.
 // Sprint 4 adds custom wallpaper + Unsplash on top of these.
+import type { CSSProperties } from "react";
 
 export interface Theme {
   name: string;
@@ -73,4 +74,51 @@ export const DEFAULT_THEME = THEMES[0];
 export function getTheme(name?: string | null): Theme {
   if (!name) return DEFAULT_THEME;
   return THEMES.find((t) => t.name === name) ?? DEFAULT_THEME;
+}
+
+export interface Wallpaper {
+  url: string;
+  name: string | null;
+  overlay_opacity?: number;
+}
+
+export const OVERLAY_PRESETS = [
+  { v: 0, label: "None" },
+  { v: 0.15, label: "Light" },
+  { v: 0.35, label: "Medium" },
+  { v: 0.55, label: "Dark" },
+  { v: 0.75, label: "Heavy" },
+];
+
+// When a wallpaper is set, card/text colors adapt so content stays legible over
+// the photo — darker as the overlay increases. The theme's accent carries through.
+export function resolveTheme(
+  theme: Theme,
+  wallpaper: Wallpaper | null,
+  overlay: number
+): Theme {
+  if (!wallpaper) return theme;
+  const dark = overlay > 0.35 || theme.isDark;
+  return {
+    ...theme,
+    text: dark ? "#f0f0f0" : theme.text,
+    card: dark ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.78)",
+    cardBorder: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+  };
+}
+
+// Background style for the page container: the wallpaper photo, or the theme
+// gradient when there's no wallpaper.
+export function backgroundStyle(
+  theme: Theme,
+  wallpaper: Wallpaper | null
+): CSSProperties {
+  return wallpaper
+    ? {
+        backgroundImage: `url(${wallpaper.url})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }
+    : { background: theme.bg };
 }
