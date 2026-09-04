@@ -81,7 +81,7 @@ export default async function ProfilePage({ params }: Props) {
       className="min-h-[calc(100vh-57px)] px-4 py-6"
       style={{ background: theme.bg, color: theme.text }}
     >
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-7xl">
         {isOwner && (
           <div className="mb-4 flex items-center justify-end gap-2">
             <Link

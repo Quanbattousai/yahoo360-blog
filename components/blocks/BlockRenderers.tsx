@@ -10,7 +10,7 @@ import {
   Link as LinkIcon,
   Clock,
   Play,
-  Heart,
+  Image as ImageIcon,
 } from "lucide-react";
 import type { Theme } from "@/lib/themes";
 import type { BlockType, ProfileBlock } from "@/lib/blocks";
@@ -157,27 +157,43 @@ function LinkList({ block, theme }: RProps) {
   );
 }
 
-function ImageGallery({ block, theme }: RProps) {
-  const images = (block.config.images as string[]) ?? [];
-  return (
-    <div>
-      <SectionTitle icon={<Video size={15} />}>Photos</SectionTitle>
-      {images.length === 0 ? (
+function ImageGallery({ block }: RProps) {
+  const images = ((block.config.images as string[]) ?? []).filter(Boolean);
+
+  if (images.length === 0) {
+    return (
+      <div>
+        <SectionTitle icon={<ImageIcon size={15} />}>Photos</SectionTitle>
         <p className="text-[13px] opacity-55">No photos yet.</p>
-      ) : (
-        <div className="grid grid-cols-2 gap-1.5">
-          {images.slice(0, 6).map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={i}
-              src={src}
-              alt=""
-              className="aspect-square w-full rounded-lg object-cover"
-              style={{ background: `${theme.accent}22` }}
-            />
-          ))}
-        </div>
-      )}
+      </div>
+    );
+  }
+
+  const shown = images.slice(0, 4);
+  const cols = shown.length === 1 ? 1 : 2;
+
+  // Fill the block: a single photo spans the whole area; multiple photos tile
+  // and stretch to fill the available height (no fixed square tiles).
+  return (
+    <div className="flex h-full flex-col">
+      <SectionTitle icon={<ImageIcon size={15} />}>Photos</SectionTitle>
+      <div
+        className="grid min-h-0 flex-1 gap-1.5"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gridAutoRows: "1fr",
+        }}
+      >
+        {shown.map((src, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={i}
+            src={src}
+            alt=""
+            className="h-full min-h-0 w-full rounded-lg object-cover"
+          />
+        ))}
+      </div>
     </div>
   );
 }
