@@ -6,6 +6,13 @@ import { getTheme } from "@/lib/themes";
 import { formatPostDate } from "@/lib/posts";
 import { PostContent } from "@/components/PostContent";
 import { DeletePostButton } from "@/components/DeletePostButton";
+import { ReactionBar } from "@/components/social/ReactionBar";
+import {
+  CommentSection,
+  type CommentItem,
+} from "@/components/social/CommentSection";
+
+type ReactionType = "heart" | "sad" | "laugh" | "fire";
 
 interface Props {
   params: { username: string; slug: string };
@@ -60,6 +67,49 @@ export default async function PostPage({ params }: Props) {
   } = await supabase.auth.getUser();
   const isOwner = user?.id === profile.id;
 
+  // Reactions: counts per type + which ones the viewer has left.
+  const { data: reactionRows } = await supabase
+    .from("reactions")
+    .select("type, user_id")
+    .eq("post_id", post.id);
+  const counts: Record<ReactionType, number> = { heart: 0, sad: 0, laugh: 0, fire: 0 };
+  const mine: ReactionType[] = [];
+  for (const r of reactionRows ?? []) {
+    counts[r.type] += 1;
+    if (user && r.user_id === user.id) mine.push(r.type);
+  }
+
+  // Comments + their authors.
+  const { data: commentRows } = await supabase
+    .from("comments")
+    .select("id, body, created_at, author_id")
+    .eq("post_id", post.id)
+    .order("created_at", { ascending: true });
+  const commentAuthorIds = [...new Set((commentRows ?? []).map((c) => c.author_id))];
+  const { data: commentAuthors } = commentAuthorIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .in("id", commentAuthorIds)
+    : { data: [] };
+  const authorById = new Map((commentAuthors ?? []).map((a) => [a.id, a]));
+  const comments: CommentItem[] = (commentRows ?? []).map((c) => {
+    const a = authorById.get(c.author_id);
+    return {
+      id: c.id,
+      body: c.body,
+      created_at: c.created_at,
+      author_id: c.author_id,
+      author: a
+        ? {
+            username: a.username,
+            display_name: a.display_name,
+            avatar_url: a.avatar_url,
+          }
+        : null,
+    };
+  });
+
   const theme = getTheme(profile.profile_theme?.name);
   const author = profile.display_name || profile.username;
 
@@ -113,6 +163,29 @@ export default async function PostPage({ params }: Props) {
           <div className="mt-6">
             <PostContent body={post.body} />
           </div>
+
+          <div className="mt-8 border-t pt-5" style={{ borderColor: theme.cardBorder }}>
+            <ReactionBar
+              postId={post.id}
+              counts={counts}
+              mine={mine}
+              loggedIn={!!user}
+              accent={theme.accent}
+            />
+          </div>
+        </div>
+
+        <div
+          className="mt-6 rounded-2xl border p-8 backdrop-blur"
+          style={{ background: theme.card, borderColor: theme.cardBorder }}
+        >
+          <CommentSection
+            postId={post.id}
+            comments={comments}
+            viewerId={user?.id ?? null}
+            accent={theme.accent}
+            cardBorder={theme.cardBorder}
+          />
         </div>
       </article>
     </main>

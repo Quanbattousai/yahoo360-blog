@@ -6,6 +6,14 @@ import { getTheme, resolveTheme, backgroundStyle } from "@/lib/themes";
 import { parseBlocks, defaultBlocks } from "@/lib/blocks";
 import { ProfileGrid } from "@/components/profile/ProfileGrid";
 import type { BlockData } from "@/components/blocks/BlockRenderers";
+import {
+  getFriends,
+  getGuestbook,
+  getFriendStatus,
+  getIncomingRequests,
+} from "@/lib/social";
+import { FriendButton } from "@/components/social/FriendButton";
+import { FriendRequests } from "@/components/social/FriendRequests";
 
 interface Props {
   params: { username: string };
@@ -71,6 +79,13 @@ export default async function ProfilePage({ params }: Props) {
   const stored = parseBlocks(profile.profile_layout);
   const blocks = stored.length > 0 ? stored : defaultBlocks(cols);
 
+  const [friends, guestbook, friendStatus, incoming] = await Promise.all([
+    getFriends(profile.id),
+    getGuestbook(profile.id),
+    getFriendStatus(user?.id ?? null, profile.id),
+    isOwner && user ? getIncomingRequests(user.id) : Promise.resolve([]),
+  ]);
+
   const data: BlockData = {
     profile: {
       username: profile.username,
@@ -80,6 +95,10 @@ export default async function ProfilePage({ params }: Props) {
       mood: profile.mood,
     },
     posts: posts ?? [],
+    friends,
+    guestbook,
+    viewerId: user?.id ?? null,
+    ownerId: profile.id,
   };
 
   return (
@@ -94,23 +113,40 @@ export default async function ProfilePage({ params }: Props) {
         />
       )}
       <div className="relative mx-auto max-w-7xl">
+        <div className="mb-4 flex items-center justify-end gap-2">
+          {isOwner ? (
+            <>
+              <Link
+                href={`/${profile.username}/settings`}
+                className="rounded-lg border px-3 py-1.5 text-sm font-semibold backdrop-blur"
+                style={{ background: theme.card, borderColor: theme.cardBorder }}
+              >
+                Settings
+              </Link>
+              <Link
+                href={`/${profile.username}/edit`}
+                className="rounded-lg px-3 py-1.5 text-sm font-semibold text-white"
+                style={{ background: theme.accent }}
+              >
+                ✨ Customize
+              </Link>
+            </>
+          ) : (
+            <FriendButton
+              targetId={profile.id}
+              status={friendStatus}
+              accent={theme.accent}
+            />
+          )}
+        </div>
+
         {isOwner && (
-          <div className="mb-4 flex items-center justify-end gap-2">
-            <Link
-              href={`/${profile.username}/settings`}
-              className="rounded-lg border px-3 py-1.5 text-sm font-semibold backdrop-blur"
-              style={{ background: theme.card, borderColor: theme.cardBorder }}
-            >
-              Settings
-            </Link>
-            <Link
-              href={`/${profile.username}/edit`}
-              className="rounded-lg px-3 py-1.5 text-sm font-semibold text-white"
-              style={{ background: theme.accent }}
-            >
-              ✨ Customize
-            </Link>
-          </div>
+          <FriendRequests
+            requests={incoming}
+            accent={theme.accent}
+            card={theme.card}
+            cardBorder={theme.cardBorder}
+          />
         )}
 
         <ProfileGrid blocks={blocks} cols={cols} theme={theme} data={data} />

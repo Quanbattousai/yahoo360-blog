@@ -15,6 +15,10 @@ import {
 import type { Theme } from "@/lib/themes";
 import type { BlockType, ProfileBlock } from "@/lib/blocks";
 import { formatPostDate } from "@/lib/posts";
+import {
+  GuestbookBlock,
+  type GuestbookEntry,
+} from "@/components/social/GuestbookBlock";
 
 export interface BlockData {
   profile: {
@@ -31,6 +35,14 @@ export interface BlockData {
     excerpt: string | null;
     published_at: string | null;
   }[];
+  friends: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  }[];
+  guestbook: GuestbookEntry[];
+  viewerId: string | null;
+  ownerId: string;
 }
 
 interface RProps {
@@ -258,25 +270,50 @@ function VideoPlayer({ block, theme }: RProps) {
   );
 }
 
-function FriendsList({ theme }: RProps) {
+function FriendsList({ data, theme }: RProps) {
+  const friends = data.friends;
   return (
     <div>
-      <SectionTitle icon={<Users size={15} />}>Friends</SectionTitle>
-      <p className="text-[13px] opacity-55" style={{ color: theme.text }}>
-        Friends arrive with the social update.
-      </p>
+      <SectionTitle icon={<Users size={15} />}>
+        Friends ({friends.length})
+      </SectionTitle>
+      {friends.length === 0 ? (
+        <p className="text-[13px] opacity-55">No friends yet.</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-2.5">
+          {friends.slice(0, 9).map((f) => (
+            <Link key={f.username} href={`/${f.username}`} className="text-center">
+              <div
+                className="mx-auto mb-1 flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-cover bg-center text-lg"
+                style={{
+                  background: f.avatar_url
+                    ? `center / cover no-repeat url(${f.avatar_url})`
+                    : `${theme.accent}22`,
+                  border: `2px solid ${theme.accent}33`,
+                }}
+              >
+                {!f.avatar_url && "🙂"}
+              </div>
+              <div className="truncate text-[11px] opacity-80">
+                {f.display_name || f.username}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function Guestbook({ theme }: RProps) {
+function Guestbook({ data, theme }: RProps) {
   return (
-    <div>
-      <SectionTitle icon={<MessageSquare size={15} />}>Guestbook</SectionTitle>
-      <p className="text-[13px] opacity-55" style={{ color: theme.text }}>
-        Visitors will be able to sign your guestbook soon.
-      </p>
-    </div>
+    <GuestbookBlock
+      ownerId={data.ownerId}
+      viewerId={data.viewerId}
+      entries={data.guestbook}
+      accent={theme.accent}
+      cardBorder={theme.cardBorder}
+    />
   );
 }
 

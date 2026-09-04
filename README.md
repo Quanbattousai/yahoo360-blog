@@ -39,8 +39,15 @@ prototype.
   dark wallpapers; the theme accent carries through
 - Appearance saved to `profiles.profile_theme` + `profiles.profile_wallpaper`
 
-The social layer (comments, reactions, friends, real guestbook) comes next
-(see the spec).
+**Sprint 5 — Social Layer ✅**
+- Reactions on posts (❤️ 😂 😢 🔥) with live counts, and flat comments
+- Friend requests: send / accept / decline / remove, with an incoming-requests
+  list on your own profile
+- Friends-only post visibility enforced in RLS (via an `are_friends` helper)
+- `friends_list` and `guestbook` profile blocks now use real data; visitors can
+  sign the guestbook
+
+Remaining: Sprint 6 — polish, mobile pass, and moderation (see the spec).
 
 ## Getting started
 
@@ -62,6 +69,9 @@ npm install
    - [`supabase/migrations/0003_wallpapers_storage.sql`](./supabase/migrations/0003_wallpapers_storage.sql)
      — the `wallpapers` Storage bucket + policies (needed for custom wallpaper
      uploads in the profile builder).
+   - [`supabase/migrations/0004_social.sql`](./supabase/migrations/0004_social.sql)
+     — the `are_friends` helper + friends-only post visibility, and public
+     read for accepted friendships (needed for the social layer).
 
    (Or, with the Supabase CLI linked to your project: `supabase db push`.)
 

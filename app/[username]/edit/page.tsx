@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileBuilder } from "@/components/profile/ProfileBuilder";
 import { parseBlocks, defaultBlocks } from "@/lib/blocks";
 import type { BlockData } from "@/components/blocks/BlockRenderers";
+import { getFriends, getGuestbook } from "@/lib/social";
 
 export const metadata = { title: "Customize profile · 360°" };
 
@@ -41,6 +42,11 @@ export default async function EditProfilePage({ params }: Props) {
   const wallpaper = wp ? { url: wp.url, name: wp.name } : null;
   const overlay = wp?.overlay_opacity ?? 0.3;
 
+  const [friends, guestbook] = await Promise.all([
+    getFriends(profile.id),
+    getGuestbook(profile.id),
+  ]);
+
   const data: BlockData = {
     profile: {
       username: profile.username,
@@ -50,6 +56,10 @@ export default async function EditProfilePage({ params }: Props) {
       mood: profile.mood,
     },
     posts: posts ?? [],
+    friends,
+    guestbook,
+    viewerId: user.id,
+    ownerId: profile.id,
   };
 
   return (
