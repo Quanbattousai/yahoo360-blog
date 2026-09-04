@@ -47,7 +47,14 @@ prototype.
 - `friends_list` and `guestbook` profile blocks now use real data; visitors can
   sign the guestbook
 
-Remaining: Sprint 6 — polish, mobile pass, and moderation (see the spec).
+**Sprint 6 — Polish & Launch ✅**
+- Friends activity feed at `/feed` (recent posts from people you're friends with)
+- Mobile-responsive profile grid (columns collapse to 1–2 on small screens)
+- Basic moderation: a Report button on posts, a `reports` table, and an admin
+  view at `/admin` (resolve reports / delete posts) gated by an `is_admin` flag
+- Lazy image loading for post + gallery images
+
+All six sprints are complete. 🎉
 
 ## Getting started
 
@@ -72,6 +79,10 @@ npm install
    - [`supabase/migrations/0004_social.sql`](./supabase/migrations/0004_social.sql)
      — the `are_friends` helper + friends-only post visibility, and public
      read for accepted friendships (needed for the social layer).
+   - [`supabase/migrations/0005_moderation.sql`](./supabase/migrations/0005_moderation.sql)
+     — the `reports` table + `is_admin` flag/helper (needed for reporting and
+     the `/admin` view). To become an admin, run once:
+     `update public.profiles set is_admin = true where username = 'you';`
 
    (Or, with the Supabase CLI linked to your project: `supabase db push`.)
 

@@ -43,6 +43,7 @@ export interface Database {
           profile_wallpaper: ProfileWallpaper | null;
           profile_layout: Json;
           grid_columns: number;
+          is_admin: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -176,6 +177,25 @@ export interface Database {
           message: string;
         };
         Update: { message?: string };
+        Relationships: [];
+      };
+      reports: {
+        Row: {
+          id: string;
+          reporter_id: string;
+          post_id: string;
+          reason: string;
+          status: "open" | "resolved";
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          reporter_id: string;
+          post_id: string;
+          reason: string;
+          status?: "open" | "resolved";
+        };
+        Update: { status?: "open" | "resolved" };
         Relationships: [];
       };
     };
