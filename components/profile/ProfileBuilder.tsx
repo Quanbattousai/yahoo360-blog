@@ -162,7 +162,7 @@ export function ProfileBuilder({
         className="min-h-[calc(100vh-105px)] px-6 py-6"
         style={{ background: theme.bg, color: theme.text }}
       >
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-7xl">
           <ProfileGrid
             blocks={blocks}
             cols={cols}
