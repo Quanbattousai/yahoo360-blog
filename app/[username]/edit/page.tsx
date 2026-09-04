@@ -1,7 +1,11 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { EditProfileForm } from "@/components/EditProfileForm";
+import { ProfileBuilder } from "@/components/profile/ProfileBuilder";
+import { getTheme } from "@/lib/themes";
+import { parseBlocks, defaultBlocks } from "@/lib/blocks";
+import type { BlockData } from "@/components/blocks/BlockRenderers";
+
+export const metadata = { title: "Customize profile · 360°" };
 
 interface Props {
   params: { username: string };
@@ -12,31 +16,46 @@ export default async function EditProfilePage({ params }: Props) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, bio, mood, profile_theme")
+    .select("*")
     .eq("username", params.username)
     .maybeSingle();
-
   if (!profile) notFound();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
   if (user.id !== profile.id) redirect(`/${params.username}`);
 
+  const { data: posts } = await supabase
+    .from("posts")
+    .select("id, title, slug, excerpt, published_at")
+    .eq("author_id", profile.id)
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
+  const cols = profile.grid_columns ?? 3;
+  const stored = parseBlocks(profile.profile_layout);
+  const blocks = stored.length > 0 ? stored : defaultBlocks(cols);
+
+  const data: BlockData = {
+    profile: {
+      username: profile.username,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+      bio: profile.bio,
+      mood: profile.mood,
+    },
+    posts: posts ?? [],
+  };
+
   return (
-    <main className="mx-auto max-w-md px-6 py-10">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Edit profile</h1>
-        <Link
-          href={`/${profile.username}`}
-          className="text-sm font-semibold text-black/50 hover:text-black"
-        >
-          Cancel
-        </Link>
-      </div>
-      <EditProfileForm profile={profile} submitLabel="Save changes" />
-    </main>
+    <ProfileBuilder
+      username={profile.username}
+      theme={getTheme(profile.profile_theme?.name)}
+      data={data}
+      initialBlocks={blocks}
+      initialCols={cols}
+    />
   );
 }
