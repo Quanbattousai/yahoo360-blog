@@ -225,12 +225,12 @@ function embedSrc(url: string): string | null {
 function MusicPlayer({ block, theme }: RProps) {
   const src = embedSrc((block.config.embedUrl as string) || "");
   return (
-    <div>
+    <div className="flex h-full flex-col">
       <SectionTitle icon={<Music size={15} />}>Now Playing</SectionTitle>
       {src ? (
         <iframe
           src={src}
-          className="h-[152px] w-full rounded-lg border-0"
+          className="min-h-0 w-full flex-1 rounded-lg border-0"
           allow="encrypted-media; clipboard-write"
           loading="lazy"
           title="Music"
@@ -247,12 +247,12 @@ function MusicPlayer({ block, theme }: RProps) {
 function VideoPlayer({ block, theme }: RProps) {
   const src = embedSrc((block.config.embedUrl as string) || "");
   return (
-    <div>
+    <div className="flex h-full flex-col">
       <SectionTitle icon={<Video size={15} />}>Video</SectionTitle>
       {src ? (
         <iframe
           src={src}
-          className="aspect-video w-full rounded-lg border-0"
+          className="min-h-0 w-full flex-1 rounded-lg border-0"
           allow="accelerometer; encrypted-media; picture-in-picture"
           allowFullScreen
           loading="lazy"
@@ -260,7 +260,7 @@ function VideoPlayer({ block, theme }: RProps) {
         />
       ) : (
         <div
-          className="flex aspect-video items-center justify-center rounded-lg"
+          className="flex min-h-0 flex-1 items-center justify-center rounded-lg"
           style={{ background: `linear-gradient(135deg, ${theme.accent}33, ${theme.accent}11)` }}
         >
           <Play size={28} style={{ color: theme.accent }} />
