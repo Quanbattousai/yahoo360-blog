@@ -28,6 +28,12 @@ export async function SiteHeader() {
         {user ? (
           <>
             <Link
+              href="/feed"
+              className="rounded-lg px-3 py-1.5 font-semibold hover:bg-black/5"
+            >
+              Feed
+            </Link>
+            <Link
               href="/write"
               className="rounded-lg px-3 py-1.5 font-semibold hover:bg-black/5"
             >

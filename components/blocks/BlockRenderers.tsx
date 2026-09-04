@@ -202,6 +202,7 @@ function ImageGallery({ block }: RProps) {
             key={i}
             src={src}
             alt=""
+            loading="lazy"
             className="h-full min-h-0 w-full rounded-lg object-cover"
           />
         ))}

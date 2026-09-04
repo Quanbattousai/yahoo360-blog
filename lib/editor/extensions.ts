@@ -13,7 +13,7 @@ export function getEditorExtensions(opts?: { placeholder?: string }): Extensions
       heading: { levels: [1, 2, 3] },
     }),
     Image.configure({
-      HTMLAttributes: { class: "post-image" },
+      HTMLAttributes: { class: "post-image", loading: "lazy" },
     }),
     Link.configure({
       openOnClick: false,

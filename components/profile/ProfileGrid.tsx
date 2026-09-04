@@ -44,7 +44,25 @@ export function ProfileGrid({
   // Render RGL only after mount so the server HTML doesn't disagree with the
   // client's width-based inline positioning (avoids hydration mismatch).
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [winW, setWinW] = useState<number | null>(null);
+  useEffect(() => {
+    setMounted(true);
+    const onResize = () => setWinW(window.innerWidth);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // In view mode, collapse columns on narrow screens so profiles stay usable on
+  // phones/tablets. The builder keeps the author's chosen column count.
+  const effectiveCols =
+    editable || winW === null
+      ? cols
+      : winW < 640
+        ? 1
+        : winW < 1024
+          ? Math.min(2, cols)
+          : cols;
 
   const layout: Layout[] = useMemo(
     () =>
@@ -54,13 +72,13 @@ export function ProfileGrid({
           i: b.i,
           x: b.x,
           y: b.y,
-          w: Math.min(b.w, cols),
+          w: Math.min(b.w, effectiveCols),
           h: b.h,
           minH: def.minH,
           minW: def.minW ?? 1,
         };
       }),
-    [blocks, cols]
+    [blocks, effectiveCols]
   );
 
   if (!mounted) {
@@ -86,7 +104,7 @@ export function ProfileGrid({
     <Grid
       className="layout"
       layout={layout}
-      cols={cols}
+      cols={effectiveCols}
       rowHeight={ROW_HEIGHT}
       margin={[14, 14]}
       containerPadding={[0, 0]}

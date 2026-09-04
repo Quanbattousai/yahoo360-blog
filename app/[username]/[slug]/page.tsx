@@ -11,6 +11,7 @@ import {
   CommentSection,
   type CommentItem,
 } from "@/components/social/CommentSection";
+import { ReportButton } from "@/components/moderation/ReportButton";
 
 type ReactionType = "heart" | "sad" | "laugh" | "fire";
 
@@ -139,6 +140,7 @@ export default async function PostPage({ params }: Props) {
               <DeletePostButton id={post.id} username={profile.username} />
             </div>
           )}
+          {!isOwner && <ReportButton postId={post.id} loggedIn={!!user} />}
         </div>
 
         <div
