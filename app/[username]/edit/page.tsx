@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileBuilder } from "@/components/profile/ProfileBuilder";
-import { getTheme } from "@/lib/themes";
 import { parseBlocks, defaultBlocks } from "@/lib/blocks";
 import type { BlockData } from "@/components/blocks/BlockRenderers";
 
@@ -38,6 +37,10 @@ export default async function EditProfilePage({ params }: Props) {
   const stored = parseBlocks(profile.profile_layout);
   const blocks = stored.length > 0 ? stored : defaultBlocks(cols);
 
+  const wp = profile.profile_wallpaper;
+  const wallpaper = wp ? { url: wp.url, name: wp.name } : null;
+  const overlay = wp?.overlay_opacity ?? 0.3;
+
   const data: BlockData = {
     profile: {
       username: profile.username,
@@ -52,10 +55,13 @@ export default async function EditProfilePage({ params }: Props) {
   return (
     <ProfileBuilder
       username={profile.username}
-      theme={getTheme(profile.profile_theme?.name)}
+      userId={user.id}
       data={data}
       initialBlocks={blocks}
       initialCols={cols}
+      initialThemeName={profile.profile_theme?.name ?? "Sakura"}
+      initialWallpaper={wallpaper}
+      initialOverlay={overlay}
     />
   );
 }

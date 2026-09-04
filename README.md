@@ -30,7 +30,16 @@ prototype.
 - Layout saved to `profiles.profile_layout` (JSON); `/{username}` renders it,
   `/{username}/edit` is the builder, `/{username}/settings` edits profile fields
 
-The theming/wallpaper system and social features come in later sprints
+**Sprint 4 — Theming & Wallpaper ✅**
+- Preset gradient themes + custom wallpaper (upload to Supabase Storage or
+  browse Unsplash) in the builder's Appearance panel
+- Unsplash browsing via a server-side proxy (`/api/unsplash`) that keeps the
+  API key server-only, with a curated fallback when no key is set
+- Overlay darkness control (0–80%) with auto-adaptive card/text colors over
+  dark wallpapers; the theme accent carries through
+- Appearance saved to `profiles.profile_theme` + `profiles.profile_wallpaper`
+
+The social layer (comments, reactions, friends, real guestbook) comes next
 (see the spec).
 
 ## Getting started
@@ -50,6 +59,9 @@ npm install
    - [`supabase/migrations/0002_post_images_storage.sql`](./supabase/migrations/0002_post_images_storage.sql)
      — the `post-images` Storage bucket + policies (needed for image uploads in
      the blog editor).
+   - [`supabase/migrations/0003_wallpapers_storage.sql`](./supabase/migrations/0003_wallpapers_storage.sql)
+     — the `wallpapers` Storage bucket + policies (needed for custom wallpaper
+     uploads in the profile builder).
 
    (Or, with the Supabase CLI linked to your project: `supabase db push`.)
 

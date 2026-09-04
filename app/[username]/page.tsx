@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { getTheme } from "@/lib/themes";
+import { getTheme, resolveTheme, backgroundStyle } from "@/lib/themes";
 import { parseBlocks, defaultBlocks } from "@/lib/blocks";
 import { ProfileGrid } from "@/components/profile/ProfileGrid";
 import type { BlockData } from "@/components/blocks/BlockRenderers";
@@ -60,7 +60,13 @@ export default async function ProfilePage({ params }: Props) {
         .order("updated_at", { ascending: false })
     : { data: null };
 
-  const theme = getTheme(profile.profile_theme?.name);
+  const baseTheme = getTheme(profile.profile_theme?.name);
+  const wp = profile.profile_wallpaper;
+  const wallpaper = wp ? { url: wp.url, name: wp.name } : null;
+  const overlay = wp?.overlay_opacity ?? 0;
+  const theme = resolveTheme(baseTheme, wallpaper, overlay);
+  const bg = backgroundStyle(baseTheme, wallpaper);
+
   const cols = profile.grid_columns ?? 3;
   const stored = parseBlocks(profile.profile_layout);
   const blocks = stored.length > 0 ? stored : defaultBlocks(cols);
@@ -78,10 +84,16 @@ export default async function ProfilePage({ params }: Props) {
 
   return (
     <main
-      className="min-h-[calc(100vh-57px)] px-4 py-6"
-      style={{ background: theme.bg, color: theme.text }}
+      className="relative min-h-[calc(100vh-57px)] px-4 py-6"
+      style={{ ...bg, color: theme.text }}
     >
-      <div className="mx-auto max-w-7xl">
+      {wallpaper && (
+        <div
+          className="pointer-events-none fixed inset-0"
+          style={{ background: `rgba(0,0,0,${overlay})` }}
+        />
+      )}
+      <div className="relative mx-auto max-w-7xl">
         {isOwner && (
           <div className="mb-4 flex items-center justify-end gap-2">
             <Link
